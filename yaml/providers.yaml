@@ -10,6 +10,6 @@ kind: Provider
 metadata:
   name: provider-azure-storage
   annotations:
-    argocd.argoproj.io/sync-wave: "-2"
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   package: xpkg.upbound.io/upbound/provider-azure-storage:v1.1.0
