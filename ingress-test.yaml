@@ -1,0 +1,44 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: foo-app
+  labels:
+    app: foo
+spec:
+  containers:
+    - image: piotrzan/platform-demo:latest
+      name: foo-app
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: foo-service
+spec:
+  selector:
+    app: foo
+  ports:
+    # Default port used by the image
+    - port: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /foo
+            pathType: Prefix
+            backend:
+              service:
+                name: foo-service
+                port:
+                  number: 3000
+          - path: /blob-content
+            pathType: Prefix
+            backend:
+              service:
+                name: foo-service
+                port:
+                  number: 3000

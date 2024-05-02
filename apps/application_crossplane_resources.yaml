@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Piotr1215/infra-platform-arch
-    path: yaml
+    path: apps
     targetRevision: HEAD
   destination:
     server: "https://kubernetes.default.svc"

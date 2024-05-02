@@ -4,6 +4,7 @@ set shell := ["bash", "-uc"]
 yaml          := justfile_directory() + "/yaml"
 secrets       := justfile_directory() + "/secrets"
 apps          := justfile_directory() + "/apps"
+kind          := justfile_directory() + "/tf-kind"
               
 browse        := if os() == "linux" { "xdg-open "} else { "open" }
 copy          := if os() == "linux" { "xsel -ib"} else { "pbcopy" }
@@ -19,7 +20,7 @@ default:
   just --list --unsorted
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
-setup: _replace_repo_user setup_kind setup_crossplane setup_argo launch_argo create_azure_secret
+setup: _replace_repo_user setup_kind setup_crossplane setup_argo _create_azure_secret _create_azure_provider _create_kubernetes_provider launch_argo
 
 # replace repo user
 _replace_repo_user:
@@ -33,18 +34,24 @@ _replace_repo_user:
     {{replace}} "s/Piotr1215/${GITHUB_USER}/g" {{apps}}/application_crossplane_resources.yaml
   fi
 
-create_azure_secret:
-    @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
+_create_azure_secret:
+  @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
+
+_create_azure_provider:
+  @envsubst < {{yaml}}/azure-provider.yaml | kubectl apply -f - 
+  @kubectl wait --for condition=healthy --timeout=300s provider/provider-azure-storage
+  @envsubst < {{yaml}}/azure-provider-config.yaml | kubectl apply -f - 
+
+_create_kubernetes_provider:
+  @envsubst < {{yaml}}/kubernetes-provider.yaml | kubectl apply -f - 
+  @kubectl wait --for condition=healthy --timeout=300s provider/provider-kubernetes
 
 # setup kind cluster
-setup_kind cluster_name='control-plane':
+setup_kind:
   #!/usr/bin/env bash
   set -euo pipefail
 
-  echo "Creating kind cluster - {{cluster_name}}"
-  envsubst < kind-config.yaml | kind create cluster --config - --wait 3m
-  kind get kubeconfig --name {{cluster_name}}
-  kubectl config use-context kind-{{cluster_name}}
+  cd {{kind}} && terraform apply -auto-approve
 
 # setup universal crossplane
 setup_crossplane xp_namespace='crossplane-system':
@@ -97,5 +104,7 @@ sync:
 
 # * delete KIND cluster
 teardown:
-  echo "Delete KIND cluster"
-  kind delete clusters control-plane
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  cd {{kind}} && terraform destroy -auto-approve
