@@ -8,13 +8,8 @@ spec:
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
-  name: provider-aws-account
-spec:
-  package: xpkg.upbound.io/upbound/provider-aws-account:v0.47.1
----
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
   name: provider-azure-storage
+annotations:
+  argocd.argoproj.io/sync-wave: "-2"
 spec:
   package: xpkg.upbound.io/upbound/provider-azure-storage:v1.1.0
