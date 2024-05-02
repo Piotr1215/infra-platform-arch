@@ -1,13 +1,27 @@
-kind: Pod
-apiVersion: v1
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: foo-app
-  labels:
-    app: foo
+  name: foo-app-deployment
 spec:
-  containers:
-    - image: piotrzan/platform-demo:latest
-      name: foo-app
+  replicas: 1
+  selector:
+    matchLabels:
+      app: foo
+  template:
+    metadata:
+      labels:
+        app: foo
+    spec:
+      containers:
+        - name: foo-app
+          image: piotrzan/platform-demo:latest
+          imagePullPolicy: Always
+          env:
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: azure-secret
+                  key: AZURE_STORAGE_CONNECTION_STRING
 ---
 kind: Service
 apiVersion: v1
@@ -28,15 +42,15 @@ spec:
   rules:
     - http:
         paths:
-          - path: /foo
-            pathType: Prefix
+          - pathType: Prefix
+            path: "/blob-content"
             backend:
               service:
                 name: foo-service
                 port:
                   number: 3000
-          - path: /blob-content
-            pathType: Prefix
+          - pathType: Prefix
+            path: "/"
             backend:
               service:
                 name: foo-service
