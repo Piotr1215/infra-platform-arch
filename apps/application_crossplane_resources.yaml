@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-resources
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Piotr1215/infra-platform-arch
+    path: yaml
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: default
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
