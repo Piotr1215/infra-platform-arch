@@ -2,11 +2,14 @@ set export
 set shell := ["bash", "-uc"]
                                  
 yaml          := justfile_directory() + "/yaml"
+secrets       := justfile_directory() + "/secrets"
 apps          := justfile_directory() + "/apps"
               
 browse        := if os() == "linux" { "xdg-open "} else { "open" }
 copy          := if os() == "linux" { "xsel -ib"} else { "pbcopy" }
 replace       := if os() == "linux" { "sed -i"} else { "sed -i '' -e" }
+
+export base64encoded_azure_creds    := `base64 ~/crossplane-azure-provider-key.json | tr -d "\n"`
               
 argocd_port   := "30950"
                                  
@@ -29,6 +32,9 @@ _replace_repo_user:
     {{replace}} "s/Piotr1215/${GITHUB_USER}/g" bootstrap.yaml
     {{replace}} "s/Piotr1215/${GITHUB_USER}/g" {{apps}}/application_crossplane_resources.yaml
   fi
+
+create_azure_secret:
+    @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
 
 # setup kind cluster
 setup_kind cluster_name='control-plane':
