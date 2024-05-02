@@ -19,7 +19,7 @@ default:
   just --list --unsorted
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
-setup: _replace_repo_user setup_kind setup_crossplane setup_argo launch_argo
+setup: _replace_repo_user setup_kind setup_crossplane setup_argo launch_argo create_azure_secret
 
 # replace repo user
 _replace_repo_user:
