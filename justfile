@@ -43,6 +43,11 @@ setup_kind:
 
   cd {{kind}} && terraform apply -auto-approve
 
+# apply composition and definition
+apply_composition:
+  envsubst < {{yaml}}/composition.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/definition.yaml | kubectl apply -f -
+
 # watch for claim application_crossplane_resources
 watch_claim:
   watch crossplane beta trace appclaim.acmeplatform.com/platform-demo

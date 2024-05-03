@@ -204,6 +204,6 @@ spec:
               spec:
                 deletionPolicy: Orphan
                 forProvider:
-                  url: https://hooks.slack.com/services/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
+                  url: $WEBHOOK_URL
                   method: POST
                   body: '{ "channel": "#app-notify", "username": "webhookbot", "text": "The app is deployed to: http://localhost", "icon_emoji": ":ghost:" }'
