@@ -20,7 +20,7 @@ default:
   just --list --unsorted
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
-setup: setup_kind setup_crossplane setup_argo create_azure_secret create_providers
+setup: setup_kind setup_crossplane setup_argo create_azure_secret create_providers bootstrap_apps
 
 create_azure_secret:
   @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
