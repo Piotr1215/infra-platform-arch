@@ -52,6 +52,8 @@ spec:
                   name: azure-secret
                   namespace: devops-team
                 forProvider:
+                  blobProperties:
+                    versioningEnabled: true
                   accountKind: StorageV2
                   accountReplicationType: LRS
                   accountTier: Standard
