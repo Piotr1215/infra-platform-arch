@@ -84,7 +84,7 @@ spec:
                     metadata:
                       name: foo-app-deployment
                     spec:
-                      replicas: 1
+                      replicas: 3
                       selector:
                         matchLabels:
                           app: foo
