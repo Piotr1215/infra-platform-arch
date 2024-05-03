@@ -37,6 +37,10 @@ create_providers:
   envsubst < {{yaml}}/resource-group.yaml | kubectl apply -f -
   just apply_composition
 
+# render composition
+render_composition:
+  crossplane beta render ../apps-deployment/storage-reader/app-claim.yaml yaml/composition.yaml yaml/functions.yaml
+
 # setup kind cluster
 setup_kind:
   #!/usr/bin/env bash
