@@ -27,9 +27,9 @@ spec:
                   type: object
                   properties:
                     namespace:
-                      description: The container image of the application
+                      description: The namespace where the application will be deployed
                       type: string
-                      default: production
+                      default: devops-team
                     connectionVariableName:
                       description: The env variable name that the app needs to connect to the storage account
                       type: string
