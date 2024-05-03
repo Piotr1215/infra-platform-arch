@@ -20,31 +20,21 @@ default:
   just --list --unsorted
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
-setup: _replace_repo_user setup_kind setup_crossplane setup_argo _create_azure_secret _create_azure_provider _create_kubernetes_provider launch_argo
-
-# replace repo user
-_replace_repo_user:
-  #!/usr/bin/env bash
-  if grep -qw "Piotr1215" bootstrap.yaml && grep -qw "Piotr1215" {{apps}}/application_crossplane_resources.yaml; then
-    if [[ -z "${GITHUB_USER}" ]]; then
-      echo "Please set GITHUB_USER variable with your user name"
-      exit 1
-    fi
-    {{replace}} "s/Piotr1215/${GITHUB_USER}/g" bootstrap.yaml
-    {{replace}} "s/Piotr1215/${GITHUB_USER}/g" {{apps}}/application_crossplane_resources.yaml
-  fi
+setup: setup_kind setup_crossplane setup_argo _create_providers
 
 _create_azure_secret:
   @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
 
-_create_azure_provider:
-  @envsubst < {{yaml}}/azure-provider.yaml | kubectl apply -f - 
-  @kubectl wait --for condition=healthy --timeout=300s provider/provider-azure-storage
-  @envsubst < {{yaml}}/azure-provider-config.yaml | kubectl apply -f - 
-
-_create_kubernetes_provider:
-  @envsubst < {{yaml}}/kubernetes-provider.yaml | kubectl apply -f - 
-  @kubectl wait --for condition=healthy --timeout=300s provider/provider-kubernetes
+_create_providers:
+  envsubst < {{yaml}}/azure-provider.yaml | kubectl apply -f - 
+  envsubst < {{yaml}}/kubernetes-provider.yaml | kubectl apply -f - 
+  envsubst < {{yaml}}/http-provider.yaml | kubectl apply -f -
+  kubectl wait --for condition=healthy --timeout=300s provider.pkg --all
+  envsubst < {{yaml}}/azure-provider-config.yaml | kubectl apply -f - 
+  envsubst < {{yaml}}/http-provider-config.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/kubernetes-provider-config.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/functions.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/resource-group.yaml | kubectl apply -f -
 
 # setup kind cluster
 setup_kind:
@@ -52,6 +42,10 @@ setup_kind:
   set -euo pipefail
 
   cd {{kind}} && terraform apply -auto-approve
+
+# watch for claim application_crossplane_resources
+watch_claim:
+  watch crossplane beta trace appclaim.acmeplatform.com/platform-demo
 
 # setup universal crossplane
 setup_crossplane xp_namespace='crossplane-system':

@@ -9,12 +9,13 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: apps
-    repoURL: https://github.com/Piotr1215/infra-platform-arch
+    path: storage-reader
+    repoURL: https://github.com/Piotr1215/apps-deployment
     targetRevision: HEAD
   syncPolicy:
     automated:
       selfHeal: true
+      prune: true
     syncOptions:
       - CreateNamespace=true
 ---

@@ -1,0 +1,12 @@
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  labels:
+    app-storage: frontend
+  name: platform-demo
+spec:
+  deletionPolicy: Orphan
+  forProvider:
+    location: germanywestcentral
+    tags:
+      provisioner: crossplane

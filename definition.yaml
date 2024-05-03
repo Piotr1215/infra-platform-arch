@@ -1,0 +1,48 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: apps.acmeplatform.com
+spec:
+  defaultCompositionRef:
+    name: app-frontend
+  group: acmeplatform.com
+  names:
+    kind: App
+    plural: apps
+  claimNames:
+    kind: AppClaim
+    plural: appclaims
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    namespace:
+                      description: The container image of the application
+                      type: string
+                      default: production
+                    connectionVariableName:
+                      description: The env variable name that the app needs to connect to the storage account
+                      type: string
+                      default: AZURE_STORAGE_CONNECTION_STRING
+                    image:
+                      description: The container image of the application
+                      type: string
+                    port:
+                      description: The application port
+                      type: integer
+                      default: 3000
+                  required:
+                    - image
+              required:
+                - parameters
+---
