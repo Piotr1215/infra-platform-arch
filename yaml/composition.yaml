@@ -53,7 +53,7 @@ spec:
                   namespace: devops-team
                 forProvider:
                   blobProperties:
-                    versioningEnabled: true
+                    - versioningEnabled: false
                   accountKind: StorageV2
                   accountReplicationType: LRS
                   accountTier: Standard
@@ -103,6 +103,13 @@ spec:
                               image: piotrzan/platform-demo:latest
                               imagePullPolicy: Always
                               name: foo-app
+                              resources:
+                                requests:
+                                  cpu: "100m"
+                                  memory: "100Mi"
+                                limits:
+                                  cpu: "200m"
+                                  memory: "200Mi"
             patches:
               - fromFieldPath: spec.parameters.namespace
                 toFieldPath: spec.forProvider.manifest.metadata.namespace
