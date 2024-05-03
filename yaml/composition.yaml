@@ -182,6 +182,9 @@ spec:
                 type: FromCompositeFieldPath
             readinessChecks:
               - type: None
+    - step: detect-ready-resources
+      functionRef:
+        name: function-auto-ready
     - step: http-confirmation
       functionRef:
         name: function-patch-and-transform
