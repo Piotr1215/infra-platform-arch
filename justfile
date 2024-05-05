@@ -20,7 +20,7 @@ default:
   just --list --unsorted
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
-setup: setup_kind setup_crossplane setup_argo create_azure_secret create_providers bootstrap_apps
+setup: setup_kind setup_crossplane setup_argo create_azure_secret create_providers bootstrap_apps deploy_monitoring
 
 create_azure_secret:
   @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
@@ -83,6 +83,20 @@ setup_argo:
   kubectl wait --for condition=Available=True --timeout=300s deployment/argocd-server --namespace argocd
   kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
   kubectl patch svc argocd-server -n argocd --type merge --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/nodePort", "value": {{argocd_port}}}]'
+
+# deploy monitoring stack
+deploy_monitoring:
+  @helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
+  @helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n prometheus \
+   --set namespaceOverride=prometheus \
+   --set prometheus.service.type=NodePort,prometheus.service.nodePort=32090 \
+   --set grafana.service.type=NodePort,grafana.service.nodePort=32000 \
+   --set grafana.namespaceOverride=prometheus \
+   --set grafana.defaultDashboardsEnabled=true \
+   --set kube-state-metrics.namespaceOverride=prometheus \
+   --set prometheus-node-exporter.namespaceOverride=prometheus --create-namespace
+  @kubectl -n prometheus patch prometheus kube-prometheus-stack-prometheus --type merge --patch '{"spec":{"enableAdminAPI":true}}'
 
 # copy ArgoCD server secret to clipboard and launch browser, user admin, pw paste from clipboard
 launch_argo:
