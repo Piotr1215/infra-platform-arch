@@ -26,13 +26,9 @@ create_azure_secret:
   @envsubst < {{secrets}}/azure-provider-secret.yaml | kubectl apply -f - 
 
 create_providers:
-  envsubst < {{yaml}}/azure-provider.yaml | kubectl apply -f - 
-  envsubst < {{yaml}}/kubernetes-provider.yaml | kubectl apply -f - 
-  envsubst < {{yaml}}/http-provider.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/providers.yaml | kubectl apply -f - 
   kubectl wait --for condition=healthy --timeout=300s provider.pkg --all
-  envsubst < {{yaml}}/azure-provider-config.yaml | kubectl apply -f - 
-  envsubst < {{yaml}}/http-provider-config.yaml | kubectl apply -f -
-  envsubst < {{yaml}}/kubernetes-provider-config.yaml | kubectl apply -f -
+  envsubst < {{yaml}}/provider-configs.yaml | kubectl apply -f -
   envsubst < {{yaml}}/functions.yaml | kubectl apply -f -
   envsubst < {{yaml}}/resource-group.yaml | kubectl apply -f -
   just apply_composition
