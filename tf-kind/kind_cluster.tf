@@ -32,6 +32,14 @@ resource "kind_cluster" "default" {
         container_port = 30950
         host_port      = 30950
       }
+      extra_port_mappings {
+        container_port = 32090
+        host_port      = 32090
+      }
+      extra_port_mappings {
+        container_port = 32000
+        host_port      = 32000
+      }
     }
 
     node {
