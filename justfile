@@ -55,7 +55,7 @@ apply_composition:
 
 # watch for claim application_crossplane_resources
 watch_claim:
-  watch crossplane beta trace appclaim.acmeplatform.com/platform-demo
+  watch crossplane beta trace appclaim.acmeplatform.com/platform-demo -n argocd
 
 # setup universal crossplane
 setup_crossplane xp_namespace='crossplane-system':
