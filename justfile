@@ -86,6 +86,7 @@ setup_argo:
 
 # deploy monitoring stack
 deploy_monitoring:
+  kubectl apply -f {{yaml}}/grafana-dashboard.yaml
   @helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   helm repo update
   @helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n prometheus \
@@ -93,6 +94,8 @@ deploy_monitoring:
    --set prometheus.service.type=NodePort,prometheus.service.nodePort=32090 \
    --set grafana.service.type=NodePort,grafana.service.nodePort=32000 \
    --set grafana.namespaceOverride=prometheus \
+   --set grafana.sidecar.dashboards.enabled=true \
+   --set grafana.sidecar.dashboards.label="grafana_dashboard" \
    --set grafana.defaultDashboardsEnabled=true \
    --set kube-state-metrics.namespaceOverride=prometheus \
    --set prometheus-node-exporter.namespaceOverride=prometheus --create-namespace
