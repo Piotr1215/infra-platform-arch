@@ -32,7 +32,7 @@ spec:
                   app-storage: frontend
                 name: sample-blob
               spec:
-                deletionPolicy: Orphan
+                deletionPolicy: Delete
                 forProvider:
                   containerAccessType: private
                   storageAccountNameSelector:
@@ -47,7 +47,7 @@ spec:
                   app-storage: frontend
                 name: platformdemostorage111
               spec:
-                deletionPolicy: Orphan
+                deletionPolicy: Delete
                 writeConnectionSecretToRef:
                   name: azure-secret
                   namespace: devops-team
@@ -191,9 +191,6 @@ spec:
                 type: FromCompositeFieldPath
             readinessChecks:
               - type: None
-    - step: detect-ready-resources
-      functionRef:
-        name: function-auto-ready
     - step: http-confirmation
       functionRef:
         name: function-patch-and-transform
@@ -219,3 +216,16 @@ spec:
                   url: $WEBHOOK_URL
                   method: POST
                   body: '{ "channel": "#app-notify", "username": "webhookbot", "text": "The app is deployed to: http://localhost and observability http://localhost:32000/d/k8s_views_ns_devops/devops-team-kubernetes-views-namespaces?orgId=1&refresh=30s&var-datasource=prometheus&var-cluster=&var-namespace=devops-team&var-resolution=30s&var-created_by=All", "icon_emoji": ":ghost:" }'
+    - step: detect-readiness
+      functionRef:
+        name: function-auto-ready
+    - step: sequence-creation
+      functionRef:
+        name: function-sequencer
+      input:
+        apiVersion: sequencer.fn.crossplane.io/v1beta1
+        kind: Input
+        rules:
+          - sequence:
+            - container
+            - http-confirmation
