@@ -38,7 +38,37 @@ spec:
                   storageAccountNameSelector:
                     matchLabels:
                       app-storage: frontend
-          - name: resouce-group
+          - name: release-uses-cluster
+            base:
+              apiVersion: apiextensions.crossplane.io/v1alpha1
+              kind: Usage
+              spec:
+                replayDeletion: true
+                of:
+                  apiVersion: storage.azure.upbound.io/v1beta1
+                  kind: Container
+                  resourceSelector:
+                    matchControllerRef: true
+                by:
+                  apiVersion: storage.azure.upbound.io/v1beta1
+                  kind: Account
+                  resourceSelector:
+                    matchControllerRef: true
+          - name: resource-group
+            base:
+              apiVersion: azure.upbound.io/v1beta1
+              kind: ResourceGroup
+              metadata:
+                labels:
+                  app-storage: frontend
+                name: platform-demo
+              spec:
+                deletionPolicy: Delete
+                forProvider:
+                  location: germanywestcentral
+                  tags:
+                    provisioner: crossplane
+          - name: account
             base:
               apiVersion: storage.azure.upbound.io/v1beta1
               kind: Account
@@ -227,5 +257,5 @@ spec:
         kind: Input
         rules:
           - sequence:
-            - container
-            - http-confirmation
+              - container
+              - http-confirmation
