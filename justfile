@@ -30,7 +30,6 @@ create_providers:
   kubectl wait --for condition=healthy --timeout=300s provider.pkg --all
   envsubst < {{yaml}}/provider-configs.yaml | kubectl apply -f -
   envsubst < {{yaml}}/functions.yaml | kubectl apply -f -
-  envsubst < {{yaml}}/resource-group.yaml | kubectl apply -f -
   just apply_composition
 
 # render composition
@@ -66,7 +65,10 @@ setup_crossplane xp_namespace='crossplane-system':
   echo "Installing crossplane version"
   helm repo add crossplane-stable https://charts.crossplane.io/stable
   helm repo update
-  helm upgrade --install crossplane --namespace {{xp_namespace}} crossplane-stable/crossplane --devel
+  helm upgrade --install crossplane \
+       --namespace {{xp_namespace}} crossplane-stable/crossplane \
+       --set args='{"--enable-realtime-compositions","--enable-usages"}' \
+       --devel
   kubectl wait --for condition=Available=True --timeout=300s deployment/crossplane --namespace {{xp_namespace}}
 
 # setup ArgoCD and patch server service to nodePort 30950
