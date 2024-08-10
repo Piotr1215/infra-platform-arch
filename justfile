@@ -34,7 +34,7 @@ create_providers:
 
 # render composition
 render_composition:
-  crossplane beta render ../apps-deployment/storage-reader/app-claim.yaml yaml/composition.yaml yaml/functions.yaml
+  crossplane beta render ../apps-deployment/storage-reader/storage-reader-claim.yaml yaml/composition.yaml yaml/functions.yaml
 
 # setup kind cluster
 setup_kind:
@@ -86,7 +86,7 @@ setup_argo:
   kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
   kubectl patch svc argocd-server -n argocd --type merge --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/nodePort", "value": {{argocd_port}}}]'
 
-# deploy monitoring stack
+# deploy monitoring stack, user: admin, pw: prom-operator
 deploy_monitoring:
   kubectl apply -f {{yaml}}/grafana-dashboard.yaml
   @helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
