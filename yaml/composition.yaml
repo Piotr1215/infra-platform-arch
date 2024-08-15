@@ -38,6 +38,24 @@ spec:
                   storageAccountNameSelector:
                     matchLabels:
                       app-storage: frontend
+          - name: vcluster
+            base:
+              apiVersion: helm.crossplane.io/v1beta1
+              kind: Release
+              metadata:
+                name: vcluster-devops
+              spec:
+                forProvider:
+                  chart:
+                    name: vcluster
+                    repository: https://charts.loft.sh
+                    version: 0.20.0
+                providerConfigRef:
+                  name: default
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.namespace
+                toFieldPath: spec.forProvider.namespace
           - name: release-uses-cluster
             base:
               apiVersion: apiextensions.crossplane.io/v1alpha1
@@ -245,7 +263,13 @@ spec:
                 forProvider:
                   url: $WEBHOOK_URL
                   method: POST
-                  body: '{ "channel": "#app-notify", "username": "webhookbot", "text": "The app is deployed to: http://localhost and observability http://localhost:32000/d/k8s_views_ns_devops/devops-team-kubernetes-views-namespaces?orgId=1&refresh=30s&var-datasource=prometheus&var-cluster=&var-namespace=devops-team&var-resolution=30s&var-created_by=All", "icon_emoji": ":ghost:" }'
+                  body: |
+                    { 
+                      "channel": "#app-notify", 
+                      "username": "webhookbot", 
+                      "text": "Your app is deployed to: http://localhost\nGrafana observability can be accessed here: http://localhost:32000/d/k8s_views_ns_devops/devops-team-kubernetes-views-namespaces?orgId=1&refresh=30s&var-datasource=prometheus&var-cluster=&var-namespace=devops-team&var-resolution=30s&var-created_by=All\nYou also have dedicated virtual cluster for further exploration and testing, to connect use: `vcluster connect vcluster-devops -n devops-team`", 
+                      "icon_emoji": ":ghost:" 
+                    }
     - step: detect-readiness
       functionRef:
         name: function-auto-ready
