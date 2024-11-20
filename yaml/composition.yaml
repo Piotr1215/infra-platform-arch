@@ -60,6 +60,8 @@ spec:
             base:
               apiVersion: apiextensions.crossplane.io/v1alpha1
               kind: Usage
+              metadata:
+                name: vcluster-usage
               spec:
                 replayDeletion: true
                 of:
@@ -113,6 +115,8 @@ spec:
             base:
               apiVersion: kubernetes.crossplane.io/v1alpha2
               kind: Object
+              metadata:
+                name: devops-team-namespace
               spec:
                 forProvider:
                   manifest:
@@ -124,6 +128,8 @@ spec:
             base:
               apiVersion: kubernetes.crossplane.io/v1alpha2
               kind: Object
+              metadata:
+                name: foo-app-deployment
               spec:
                 forProvider:
                   manifest:
@@ -174,6 +180,8 @@ spec:
             base:
               apiVersion: kubernetes.crossplane.io/v1alpha2
               kind: Object
+              metadata:
+                name: foo-service
               spec:
                 forProvider:
                   manifest:
@@ -202,6 +210,8 @@ spec:
             base:
               apiVersion: kubernetes.crossplane.io/v1alpha2
               kind: Object
+              metadata:
+                name: example-ingress
               spec:
                 forProvider:
                   manifest:
@@ -246,6 +256,8 @@ spec:
         apiVersion: pt.fn.crossplane.io/v1beta1
         environment: null
         kind: Resources
+        metadata:
+          name: slack-webhook
         patchSets:
           - name: metadata
             patches:
@@ -279,6 +291,8 @@ spec:
       input:
         apiVersion: sequencer.fn.crossplane.io/v1beta1
         kind: Input
+        metadata:
+          name: sequencer
         rules:
           - sequence:
               - container
