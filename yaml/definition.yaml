@@ -45,4 +45,3 @@ spec:
                     - image
               required:
                 - parameters
----

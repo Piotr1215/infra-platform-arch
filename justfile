@@ -67,8 +67,7 @@ setup_crossplane xp_namespace='crossplane-system':
   helm repo update
   helm upgrade --install crossplane \
        --namespace {{xp_namespace}} crossplane-stable/crossplane \
-       --set args='{"--enable-realtime-compositions","--enable-usages"}' \
-       --devel
+       --set args='{"--enable-usages"}'
   kubectl wait --for condition=Available=True --timeout=300s deployment/crossplane --namespace {{xp_namespace}}
 
 # setup ArgoCD and patch server service to nodePort 30950

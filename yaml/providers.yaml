@@ -36,7 +36,7 @@ kind: Provider
 metadata:
   name: provider-http
 spec:
-  package: "xpkg.upbound.io/crossplane-contrib/provider-http:v1.0.0"
+  package: "xpkg.upbound.io/crossplane-contrib/provider-http:v1.0.5"
 ---
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
