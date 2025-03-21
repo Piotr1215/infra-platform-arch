@@ -1,0 +1,12 @@
+apiVersion: acmeplatform.com/v1alpha1
+kind: AppClaim
+metadata:
+  name: platform-demo
+  labels:
+    app-owner: piotrzan
+spec:
+  parameters:
+    namespace: app-team  # Creating in a new namespace within the vCluster
+    connectionVariableName: AZURE_STORAGE_CONNECTION_STRING
+    image: piotrzan/platform-demo:latest
+    port: 3000

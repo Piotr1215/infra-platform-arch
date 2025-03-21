@@ -1,0 +1,14 @@
+sync:
+  fromHost:
+    secrets:
+      enabled: true
+      mappings:
+        byName:
+          # Sync the azure-creds secret from crossplane-system in the host
+          # to crossplane-system in the vCluster
+          "crossplane-system/azure-creds": "crossplane-system/azure-creds"
+    ingressClasses:
+      enabled: true
+  toHost:
+    ingresses:
+      enabled: true

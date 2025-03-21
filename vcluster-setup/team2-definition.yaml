@@ -1,0 +1,35 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: infrastructures.acmeplatform.com
+spec:
+  group: acmeplatform.com
+  names:
+    kind: Infrastructure
+    plural: infrastructures
+  claimNames:
+    kind: InfrastructureClaim
+    plural: infrastructureclaims
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    storageSuffix:
+                      type: string
+                      description: "Suffix for the storage account name"
+                    containerName: 
+                      type: string
+                      description: "Name for the blob container"
+                  required:
+                    - storageSuffix
+                    - containerName

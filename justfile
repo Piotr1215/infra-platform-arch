@@ -5,6 +5,7 @@ yaml          := justfile_directory() + "/yaml"
 secrets       := justfile_directory() + "/secrets"
 apps          := justfile_directory() + "/apps"
 kind          := justfile_directory() + "/tf-kind"
+vcluster      := justfile_directory() + "/vcluster-setup"
               
 browse        := if os() == "linux" { "xdg-open "} else { "open" }
 copy          := if os() == "linux" { "xsel -ib"} else { "pbcopy" }
@@ -18,6 +19,38 @@ argocd_port   := "30950"
 # targets marked with * are main targets
 default:
   just --list --unsorted
+
+vcluster_setup: vcluster_create vcluster_setup_crossplane
+
+vcluster_create:
+  kubectl create namespace team2
+  vcluster create team2-vcluster -n team2 -f {{vcluster}}/team2-vcluster-values.yaml --connect=false
+  vcluster connect team2-vcluster
+
+vcluster_setup_crossplane:
+  vcluster connect team2-vcluster
+  just setup_crossplane crossplane-system
+  kubectl apply -f {{vcluster}}/team2-providers.yaml
+  kubectl wait --for condition=healthy --timeout=300s provider.pkg --all
+  kubectl apply -f {{vcluster}}/team2_provider-configs.yaml
+  kubectl apply -f {{vcluster}}/team2_functions.yaml
+  kubectl apply -f {{vcluster}}/team2-definition.yaml
+  kubectl apply -f {{vcluster}}/team2-composition.yaml
+  kubectl apply -f {{vcluster}}/team2-platform-demo-rg.yaml
+
+vcluster_create_claim:
+  vcluster connect team2-vcluster
+  kubectl create namespace team2 --dry-run=client -o yaml | kubectl apply -f -
+  kubectl apply -f {{vcluster}}/team2-claim.yaml -n team2
+
+# cleanup team2 demo
+vcluster_cleanup_claim:
+  vcluster connect team2-vcluster
+  kubectl delete -f {{vcluster}}/team2-claim.yaml
+  kubectl delete -f {{vcluster}}/team2-platform-demo-rg.yaml
+  vcluster disconnect
+  vcluster delete team2-vcluster -n team2
+  kubectl delete namespace team2
 
 # * setup kind cluster with crossplane, ArgoCD and launch argocd in browser
 setup: setup_kind setup_crossplane setup_argo create_azure_secret create_providers bootstrap_apps deploy_monitoring

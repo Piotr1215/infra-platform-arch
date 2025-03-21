@@ -1,0 +1,14 @@
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  labels:
+    app-storage: frontend
+  name: team2-platform-demo
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    location: germanywestcentral
+    tags:
+      provisioner: crossplane
+  providerConfigRef:
+    name: default

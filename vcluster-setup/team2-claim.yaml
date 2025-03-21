@@ -1,0 +1,13 @@
+apiVersion: acmeplatform.com/v1alpha1
+kind: InfrastructureClaim
+metadata:
+  labels:
+    team: team2
+  name: team2-demo
+  namespace: team2
+spec:
+  compositionRef:
+    name: team2-azure-infra
+  parameters:
+    containerName: team2-blob-container
+    storageSuffix: "abc456xyz"

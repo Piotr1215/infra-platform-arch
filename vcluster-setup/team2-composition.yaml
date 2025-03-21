@@ -1,0 +1,59 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: team2-azure-infra
+  labels:
+    provider: azure
+    team: team2
+spec:
+  compositeTypeRef:
+    apiVersion: acmeplatform.com/v1alpha1
+    kind: Infrastructure
+  writeConnectionSecretsToNamespace: team2
+  resources:
+    - name: storage-account
+      base:
+        apiVersion: storage.azure.upbound.io/v1beta1
+        kind: Account
+        metadata:
+          name: team2storage123
+        spec:
+          forProvider:
+            accountKind: StorageV2
+            accountReplicationType: LRS
+            accountTier: Standard
+            location: West Europe
+            resourceGroupNameRef:
+              name: team2-platform-demo
+      patches:
+        - fromFieldPath: spec.parameters.storageSuffix
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: team2storage%s
+                type: Format
+          type: FromCompositeFieldPath
+    - name: storage-container
+      base:
+        apiVersion: storage.azure.upbound.io/v1beta1
+        kind: Container
+        metadata:
+          name: team2-blob-container
+        spec:
+          forProvider:
+            containerAccessType: private
+            accountNameRef:
+              name: team2storage123
+      patches:
+        - fromFieldPath: spec.parameters.containerName
+          toFieldPath: metadata.name
+          type: FromCompositeFieldPath
+        - fromFieldPath: spec.parameters.storageSuffix
+          toFieldPath: spec.forProvider.accountNameRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: team2storage%s
+                type: Format
+          type: FromCompositeFieldPath
