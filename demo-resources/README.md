@@ -1,31 +1,27 @@
 # Demo Resources
 
-This directory contains resources for the vCluster multitenancy demo. The files here are not directly used by ArgoCD, but are templates that will be copied to the repository root during the demo.
+This directory contains resources for the vCluster multitenancy demo. The files here are templates for ArgoCD applications that will be applied during the demo.
 
 ## Demo Flow
 
-### Demo 1: Setting up Team2 Infrastructure
+### Demo 1: Setting up Team2 Infrastructure with vCluster
 
-1. Run `just setup_teams_pr` to:
-   - Copy `teams-infra-app.yaml` to the repository root
-   - Create a PR with teams/ directory
-   - Apply the ArgoCD application that watches the teams/ directory
+1. Run `just setup_vcluster_pr` to:
+   - Apply the vcluster-app.yaml ArgoCD application
+   - Create a PR in the apps-deployment repository with vCluster setup files
 
-2. Merge the PR to demonstrate how ArgoCD picks up the changes and deploys the Team2 vCluster
-
-3. After the demo, run `just cleanup_teams_pr` to:
-   - Remove the ArgoCD application
-   - Delete the branch
+2. Merge the PR to demonstrate how ArgoCD picks up the changes and deploys Team2 vCluster
 
 ### Demo 2: Setting up Team2 Applications
 
-1. Run `just setup_teams_apps_pr` to:
-   - Copy `teams-apps-app.yaml` to the repository root
-   - Create a PR with teams-apps/ directory
-   - Apply the ArgoCD application that watches the teams-apps/ directory
+1. Run `just setup_team2_claim_pr` to:
+   - Create a PR in the apps-deployment repository with claim files
+   - Set up an ArgoCD application to deploy the claim to the Team2 vCluster
 
-2. Merge the PR to demonstrate how ArgoCD picks up the claims and deploys them to the Team2 vCluster
+2. Merge the PR to demonstrate how ArgoCD picks up the claim and deploys it to the Team2 vCluster
 
-3. After the demo, run `just cleanup_teams_apps_pr` to:
-   - Remove the ArgoCD application
-   - Delete the branch
+### Cleanup
+
+After the demo, run `just cleanup_vcluster_demo` to:
+   - Remove the ArgoCD applications
+   - Delete the team2 namespace and all resources in it

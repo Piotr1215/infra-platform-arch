@@ -153,79 +153,150 @@ sync:
   yes | argocd login localhost:{{argocd_port}} --username admin --password "${argo_pw}"
   argocd app sync bootstrap --prune --local ./apps 
 
-# create PR to add team2 vcluster infrastructure
-setup_teams_pr:
+# create PR for vCluster team2 infrastructure in apps-deployment repo
+setup_vcluster_pr:
   #!/usr/bin/env bash
   set -euo pipefail
   
-  # Copy the ArgoCD application file to the root
-  cp demo-resources/teams-infra-app.yaml ./teams-infra-app.yaml
+  # Apply the ArgoCD application that will watch the vcluster-team2 directory
+  kubectl apply -f demo-resources/vcluster-app.yaml
+  
+  # Clone the apps-deployment repository to a temporary directory
+  rm -rf /tmp/apps-deployment
+  git clone https://github.com/Piotr1215/apps-deployment /tmp/apps-deployment
+  cd /tmp/apps-deployment
   
   # Create a new branch
-  git checkout -b add-team2-infrastructure
+  git checkout -b add-vcluster-team2
   
-  # Apply the ArgoCD application that will watch the teams directory
-  kubectl apply -f teams-infra-app.yaml
+  # Create the vcluster-team2 directory
+  mkdir -p vcluster-team2
   
+  # Copy the vCluster files
+  cp -R {{vcluster}}/*.yaml vcluster-team2/
+  
+  # Remove the values file (will be configured via Helm)
+  rm -f vcluster-team2/team2-vcluster-values.yaml
+  
+  # Add vCluster Helm release manifest
+  cat > vcluster-team2/vcluster.yaml << 'EOL'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team2
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: team2-vcluster
+  namespace: team2
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: vcluster
+      version: "0.15.0"
+      sourceRef:
+        kind: HelmRepository
+        name: loft
+        namespace: argocd
+  values:
+    sync:
+      fromHost:
+        secrets:
+          enabled: true
+          mappings:
+            byName:
+              "crossplane-system/azure-creds": "crossplane-system/azure-creds"
+        ingressClasses:
+          enabled: true
+      toHost:
+        ingresses:
+          enabled: true
+EOL
+
+  # Add HelmRepository
+  cat > vcluster-team2/helm-repo.yaml << 'EOL'
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: loft
+  namespace: argocd
+spec:
+  interval: 1h
+  url: https://charts.loft.sh
+EOL
+
   # Add and commit changes
-  git add teams/ teams-infra-app.yaml
-  git commit -m "Add Team2 vCluster infrastructure"
+  git add vcluster-team2/
+  git commit -m "Add vCluster setup for Team2"
   
   # Push and create PR
-  git push -u origin add-team2-infrastructure
-  gh pr create --title "Add Team2 vCluster infrastructure" --body "This PR adds the infrastructure setup for Team2 using vCluster and Crossplane."
+  git push -u origin add-vcluster-team2
+  gh pr create --title "Add vCluster setup for Team2" --body "This PR adds the vCluster infrastructure setup for Team2 using vCluster and Crossplane."
 
-# cleanup after team2 infrastructure PR demo
-cleanup_teams_pr:
+# create PR for team2 claim in apps-deployment repo
+setup_team2_claim_pr:
   #!/usr/bin/env bash
   set -euo pipefail
   
-  # Switch to main branch
-  git checkout main
-  
-  # Remove the ArgoCD application from the cluster
-  kubectl delete -f demo-resources/teams-infra-app.yaml
-  
-  # Delete the branch
-  git branch -D add-team2-infrastructure || true
-  git push origin --delete add-team2-infrastructure || true
-
-# create PR to add team2 application claims
-setup_teams_apps_pr:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Copy the ArgoCD application file to the root
-  cp demo-resources/teams-apps-app.yaml ./teams-apps-app.yaml
+  # Clone the apps-deployment repository to a temporary directory
+  rm -rf /tmp/apps-deployment
+  git clone https://github.com/Piotr1215/apps-deployment /tmp/apps-deployment
+  cd /tmp/apps-deployment
   
   # Create a new branch
-  git checkout -b add-team2-applications
+  git checkout -b add-team2-claim
   
-  # Apply the ArgoCD application that will watch the teams-apps directory
-  kubectl apply -f teams-apps-app.yaml
+  # Create the claim file
+  mkdir -p vcluster-team2-apps
+  cp {{vcluster}}/team2-claim.yaml vcluster-team2-apps/
   
+  # Add application to sync with vCluster
+  cat > vcluster-team2-apps/application.yaml << 'EOL'
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: team2-claim
+  namespace: argocd
+spec:
+  destination:
+    namespace: team2
+    server: https://kubernetes.default.svc/api/v1/namespaces/team2/services/team2-vcluster:8443/proxy
+  project: default
+  source:
+    path: vcluster-team2-apps
+    repoURL: https://github.com/Piotr1215/apps-deployment
+    targetRevision: HEAD
+    directory:
+      include: team2-claim.yaml
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+EOL
+
   # Add and commit changes
-  git add teams-apps/ teams-apps-app.yaml
-  git commit -m "Add Team2 application claims"
+  git add vcluster-team2-apps/
+  git commit -m "Add claim for Team2 vCluster"
   
   # Push and create PR
-  git push -u origin add-team2-applications
-  gh pr create --title "Add Team2 application claims" --body "This PR adds application claims for Team2 that will be deployed to their vCluster."
+  git push -u origin add-team2-claim
+  gh pr create --title "Add claim for Team2 vCluster" --body "This PR adds a claim that will be deployed to the Team2 vCluster."
 
-# cleanup after team2 applications PR demo
-cleanup_teams_apps_pr:
+# cleanup vCluster demo
+cleanup_vcluster_demo:
   #!/usr/bin/env bash
   set -euo pipefail
   
-  # Switch to main branch
-  git checkout main
+  # Delete the ArgoCD applications
+  kubectl delete application vcluster-team2 -n argocd || true
+  kubectl delete application team2-claim -n argocd || true
   
-  # Remove the ArgoCD application from the cluster
-  kubectl delete -f demo-resources/teams-apps-app.yaml
-  
-  # Delete the branch
-  git branch -D add-team2-applications || true
-  git push origin --delete add-team2-applications || true
+  # Delete the team2 namespace and all resources in it
+  kubectl delete namespace team2 --cascade=true || true
 
 # * delete KIND cluster
 teardown:
