@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: team2-crossplane-resources
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc/api/v1/namespaces/team2/services/team2-vcluster:8443/proxy
+  project: default
+  source:
+    path: vcluster-setup
+    repoURL: https://github.com/Piotr1215/infra-platform-arch
+    targetRevision: HEAD
+    directory:
+      include: |
+        team2-providers.yaml
+        team2_provider-configs.yaml
+        team2_functions.yaml
+        team2-definition.yaml
+        team2-composition.yaml
+        team2-platform-demo-rg.yaml
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

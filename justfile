@@ -153,6 +153,80 @@ sync:
   yes | argocd login localhost:{{argocd_port}} --username admin --password "${argo_pw}"
   argocd app sync bootstrap --prune --local ./apps 
 
+# create PR to add team2 vcluster infrastructure
+setup_teams_pr:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Copy the ArgoCD application file to the root
+  cp demo-resources/teams-infra-app.yaml ./teams-infra-app.yaml
+  
+  # Create a new branch
+  git checkout -b add-team2-infrastructure
+  
+  # Apply the ArgoCD application that will watch the teams directory
+  kubectl apply -f teams-infra-app.yaml
+  
+  # Add and commit changes
+  git add teams/ teams-infra-app.yaml
+  git commit -m "Add Team2 vCluster infrastructure"
+  
+  # Push and create PR
+  git push -u origin add-team2-infrastructure
+  gh pr create --title "Add Team2 vCluster infrastructure" --body "This PR adds the infrastructure setup for Team2 using vCluster and Crossplane."
+
+# cleanup after team2 infrastructure PR demo
+cleanup_teams_pr:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Switch to main branch
+  git checkout main
+  
+  # Remove the ArgoCD application from the cluster
+  kubectl delete -f demo-resources/teams-infra-app.yaml
+  
+  # Delete the branch
+  git branch -D add-team2-infrastructure || true
+  git push origin --delete add-team2-infrastructure || true
+
+# create PR to add team2 application claims
+setup_teams_apps_pr:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Copy the ArgoCD application file to the root
+  cp demo-resources/teams-apps-app.yaml ./teams-apps-app.yaml
+  
+  # Create a new branch
+  git checkout -b add-team2-applications
+  
+  # Apply the ArgoCD application that will watch the teams-apps directory
+  kubectl apply -f teams-apps-app.yaml
+  
+  # Add and commit changes
+  git add teams-apps/ teams-apps-app.yaml
+  git commit -m "Add Team2 application claims"
+  
+  # Push and create PR
+  git push -u origin add-team2-applications
+  gh pr create --title "Add Team2 application claims" --body "This PR adds application claims for Team2 that will be deployed to their vCluster."
+
+# cleanup after team2 applications PR demo
+cleanup_teams_apps_pr:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Switch to main branch
+  git checkout main
+  
+  # Remove the ArgoCD application from the cluster
+  kubectl delete -f demo-resources/teams-apps-app.yaml
+  
+  # Delete the branch
+  git branch -D add-team2-applications || true
+  git push origin --delete add-team2-applications || true
+
 # * delete KIND cluster
 teardown:
   #!/usr/bin/env bash
