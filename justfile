@@ -153,6 +153,15 @@ sync:
   yes | argocd login localhost:{{argocd_port}} --username admin --password "${argo_pw}"
   argocd app sync bootstrap --prune --local ./apps 
 
+cleanup_terraform:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  cd {{kind}}
+  rm -f .terraform/terraform.tfstate
+  rm -f terraform.tfstate*
+  terraform init
+  cd ..
+
 # * delete KIND cluster
 teardown:
   #!/usr/bin/env bash
